@@ -1,0 +1,13 @@
+:root {
+  --primary-color: #3b82f6;
+  --error-color: #ef4444;
+  --text-main: #374151;
+  --border-color: #d1d5db;
+  --radius: 6px;
+  --transition: 0.2s ease-in-out;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}

@@ -1,0 +1,51 @@
+.geo-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  list-style: none;
+}
+
+.geo-option__loading,
+.geo-option__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 20px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.geo-option:hover {
+  background-color: #f3f4f6;
+}
+
+.geo-option__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  font-size: 18px;
+}
+
+.geo-option__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.geo-option__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.geo-option__type-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.025em;
+}
