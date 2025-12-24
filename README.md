@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+#### Архітектура (FSD)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Проєкт побудований за методологією FSD. Це дозволило розділити відповідальність між шарами та забезпечити легку
+підтримку коду:
 
-Currently, two official plugins are available:
+- Shared: універсальні UI-компоненти (Input, Dropdown, Button).
+- Entities: моделі даних (`Tour`, `Hotel`, `Geo`), сервіси для роботи з API та логіка перетворення даних (мапери та
+  агрегатори).
+- Features: складна бізнес-логіка, що поєднує UI та сервіси (як у `search-tours`).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+#### Технічні рішення та реалізація
 
-## React Compiler
+##### 1. Робота з асинхронними даними (Polling & Retry)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Реалізовано полінг для отримання цін:
 
-## Expanding the ESLint configuration
+- Dynamic Delay: час наступного запиту розраховується на основі поля `waitUntil` від сервера.
+- Retry Logic: додала механізм повторних запитів (до 2-х спроб) у разі помилок мережі.
+- Race Condition: `currentSearchId` (Refs) гарантує, що результати застарілих запитів не потраплять у стейт.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+##### 2. Агрегація та мапінг даних
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Mappers: перетворюють відповіді API у зручні для додатка об'єкти.
+- Aggregators: поєднують дані про ціни з даними про готелі за `hotel_id`.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+##### 3. Оптимізація та UX
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Cancellation: при старті нового пошуку попередній активний токен скасовується на сервері (`stopSearchPrices`) та
+  ігнорується на клієнті.
+- Caching: результати пошуку цін кешуються за `countryId` за допомогою `useRef`, що запобігає повторним запитам при
+  ідентичних параметрах.
+- Debounce: пошук гео-позицій оптимізовано дебаунсом (300мс) для зменшення навантаження на сервер.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+##### 4. Композиція компонентів
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+UI побудований за принципом LEGO:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Контрол вибору напрямку - композиція універсального `Input` та `Dropdown`.
+- Бізнес-логіка винесена у кастомні хуки (`useTourPrices`, `useEnrichedTours`, `useGeoSearch`).
+
+##### Комментарі до виконаного завдання
+
+- Я дотрималась принципу Inversion of Control. Мої базові компоненти в шарі Shared є 'тупими', вони не прив'язані до
+  бізнес-моделей. Все прокидається в них зверху через композицію (children) або спеціалізовані хуки на рівні Features.
+  Це дозволяє перевикористати Dropdown або Input у будь-якій іншій частині додатка з іншими типами даних.
+
+- Для забезпечення розширюваності форми я використала композиційний підхід та Provider як єдине джерело істини. Нові
+  items форми (DateRangePicker) додаються простим вкладенням нових компонентів у form. Бізнес-логіка кожного form-item
+  ізольована у своїх хуках. Додавання нового поля (наприклад, фільтра за ціною) потребуватиме створення лише одного
+  нового хука, який буде підключений до загального контексту.
+
+- Верстка за прототипом: Виникла складність із точним відтворенням через формат скріншота - важко зрозуміти точні
+  відступи, розміри шрифтів та інші деталі. Також в API немає інформації про прапор країни, а в завданні не вказано, як
+  саме мають виглядати стейти (loading, error, empty). Через це я зробила їх на свій розсуд, що може не повністю
+  відповідати вашим очікуванням.
+
+- Логіка сітки: Якщо в результатах лише 1 елемент, я залишила його ліворуч (як і інші картки), оскільки не було вказано,
+  чи має він центнуватися в такому випадку.
+
+- UI-kit: Я не впроваджувала ui-kit (глобальні шрифти, кольори тощо), оскільки цього не було вказано в завданні, і фокус
+  був на архітектурі та логіці.
