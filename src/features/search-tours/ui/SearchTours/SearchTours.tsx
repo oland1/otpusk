@@ -24,7 +24,7 @@ const FormContent = () => {
             size="md"
             variant="primary"
             className="search-form__submit"
-            disabled={isLoading || !selectedItem}
+            disabled={isLoading || !selectedItem} // selectedItem - я не знаю точно чи можна робити пошук без вибраного елемента ??
           />
         </form>
 
