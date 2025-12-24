@@ -1,6 +1,7 @@
 .tours-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, max-content));
+  justify-content: center;
   max-width: 800px;
   margin: 32px auto;
   gap: 24px;

@@ -7,6 +7,14 @@
   --transition: 0.2s ease-in-out;
 }
 
+html {
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   margin: 0;

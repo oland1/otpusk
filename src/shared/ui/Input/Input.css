@@ -52,11 +52,6 @@
   color: var(--error-color);
 }
 
-.ui-input__wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
 
 .ui-input__field--with-clear {
   padding-right: 36px;
