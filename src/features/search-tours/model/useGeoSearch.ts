@@ -1,63 +1,62 @@
-import {useRef, useState} from 'react';
-import {GeoService} from '@/entities/geo/api/geoService';
-import type {GeoOption} from '@/entities/geo/model/types';
+import {useCallback, useEffect, useRef} from 'react';
+import type {GeoOption} from "@/entities/geo";
+import {GeoService} from '@/entities/geo';
+import {useSearchTours} from './SearchToursContext';
 
 export const useGeoSearch = () => {
-  const [query, setQuery] = useState('');
-  const [options, setOptions] = useState<GeoOption[]>([]);
-  const [selectedItem, setSelectedItem] = useState<GeoOption | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    query, setQuery,
+    selectedItem, setSelectedItem,
+    geoOptions: options, setGeoOptions: setOptions,
+    isGeoLoading: isLoading, setIsGeoLoading: setIsLoading
+  } = useSearchTours();
 
   const requestIdRef = useRef(0);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const safeRequest = async (fn: () => Promise<GeoOption[]>) => {
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const safeRequest = useCallback(async (fn: () => Promise<GeoOption[]>) => {
     const requestId = ++requestIdRef.current;
     setIsLoading(true);
-
-    const data = await fn();
-
-    if (requestId === requestIdRef.current) {
-      setOptions(data);
-      setIsLoading(false);
+    try {
+      const data = await fn();
+      if (requestId === requestIdRef.current) setOptions(data);
+    } catch {
+      if (requestId === requestIdRef.current) setOptions([]);
+    } finally {
+      if (requestId === requestIdRef.current) setIsLoading(false);
     }
+  }, [setIsLoading, setOptions]);
+
+  const handleFocus = () => {
+    if (!query) return safeRequest(() => GeoService.fetchCountries());
+    safeRequest(() => GeoService.search(query));
   };
 
-  const handleFocus = async () => {
-    if (!query) {
-      await safeRequest(() => GeoService.fetchCountries());
-      return;
-    }
-
-    if (selectedItem) {
-      if (selectedItem.type === 'country') {
-        await safeRequest(() => GeoService.fetchCountries());
-      } else {
-        await safeRequest(() => GeoService.search(selectedItem.name));
-      }
-      return;
-    }
-
-    await safeRequest(() => GeoService.search(query));
-  };
-
-  const handleChange = async (text: string) => {
+  const handleChange = (text: string) => {
     setQuery(text);
 
     if (selectedItem && text !== selectedItem.name) {
       setSelectedItem(null);
     }
 
-    if (!text) {
-      await safeRequest(() => GeoService.fetchCountries());
-      return;
-    }
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
-    await safeRequest(() => GeoService.search(text));
+    debounceTimerRef.current = setTimeout(() => {
+      if (!text) safeRequest(() => GeoService.fetchCountries());
+      else safeRequest(() => GeoService.search(text));
+    }, 300);
   };
 
   const handleSelect = (option: GeoOption) => {
     setQuery(option.name);
     setSelectedItem(option);
+    setOptions([]);
   };
 
   const handleClear = () => {
@@ -67,13 +66,7 @@ export const useGeoSearch = () => {
   };
 
   return {
-    query,
-    options,
-    selectedItem,
-    isLoading,
-    handleFocus,
-    handleChange,
-    handleClear,
-    handleSelect,
+    query, options, isLoading, selectedItem,
+    handleFocus, handleChange, handleClear, handleSelect,
   };
 };

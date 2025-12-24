@@ -35,10 +35,7 @@ export const Button = (props: Props) => {
     className
   );
 
-  const iconClasses = clsx("ui-button__icon", {
-    "ui-button__icon--right": iconPosition === "right",
-    "ui-button__icon--left": iconPosition === "left",
-  });
+  const iconClasses = clsx("ui-button__icon", `ui-button__icon--${iconPosition}`);
 
   return (
     <button

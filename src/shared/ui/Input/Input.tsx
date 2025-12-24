@@ -1,4 +1,4 @@
-import {forwardRef, type InputHTMLAttributes, type ReactNode,} from 'react';
+import {forwardRef, type InputHTMLAttributes, type ReactNode, useId,} from 'react';
 import {clsx} from 'clsx';
 import './Input.css';
 
@@ -10,7 +10,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
-  const {label, error, addonLeft, onClear, className, id, value, ...otherProps} = props;
+  const id = useId();
+  const {label, error, addonLeft, onClear, className, value, ...otherProps} = props;
 
   const fieldClasses = clsx('ui-input__field', {
     'ui-input__field--error': error,

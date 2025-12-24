@@ -19,16 +19,6 @@
   outline: none;
 }
 
-.ui-button--outline {
-  --btn-bg: #ffffff;
-  --btn-border: #e5e7eb;
-  --btn-text: #1f2937;
-}
-
-.ui-button--outline:hover:not(:disabled) {
-  --btn-bg: #f3f4f6;
-}
-
 .ui-button--primary {
   --btn-bg: #2563eb;
   --btn-border: transparent;
@@ -45,13 +35,8 @@
 }
 
 .ui-button--md {
-  padding: 10px 16px;
+  padding: 12px 16px;
   font-size: 16px;
-}
-
-.ui-button--lg {
-  padding: 12px 24px;
-  font-size: 18px;
 }
 
 .ui-button:disabled {
