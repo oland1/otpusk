@@ -1,7 +1,7 @@
-import {SearchToursForm} from "@/features/search-tours";
+import {SearchTours} from "@/features/search-tours";
 
 export const Home = () => {
   return (
-    <SearchToursForm/>
+    <SearchTours/>
   )
 }

@@ -5,4 +5,5 @@ export interface GeoOption {
   name: string;
   type: GeoType;
   flag?: string;
+  countryId?: string;
 }

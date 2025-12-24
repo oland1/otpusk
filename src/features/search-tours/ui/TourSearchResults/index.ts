@@ -1,0 +1,1 @@
+export {TourSearchResults} from './TourSearchResults';

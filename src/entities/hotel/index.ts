@@ -1,0 +1,1 @@
+export {HotelService} from './api/hotelService';
